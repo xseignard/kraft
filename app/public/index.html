@@ -70,6 +70,10 @@
 						document.getElementById('pause').className = 'btn btn-danger disabled';
 						document.getElementById('play').className = 'btn btn-success';
 					}
+					else if (button === 'restart') {
+						document.getElementById('pause').className = 'btn btn-danger';
+						document.getElementById('play').className = 'btn btn-success disabled';
+					}
 					socket.emit(button);
 				};
 			});
