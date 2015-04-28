@@ -54,7 +54,7 @@ void setup() {
 	//dmd.selectFont(ChunkFive);
 	dmd.selectFont(Tertre);
 	// initialize timer for spi communication
-	Timer1.initialize(5000);
+	Timer1.initialize(1000);
 	Timer1.attachInterrupt(ScanDMD);
 	// flash to indicate everything is ok
 	flash(1);
