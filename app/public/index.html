@@ -20,10 +20,14 @@
 		<div>
 			<h1>Controle du chronomètre</h1>
 			<div>
+				<h3>Temps restant</h3>
+				<span id="time"></span> / <span id="ref"></span>
+			</div>
+			<div>
 				<h3>Playback</h3>
 				<a id="play" class="btn btn-success" href="#">Play</a>
 				<a id="pause" class="btn btn-danger" href="#">Pause</a>
-				<a id="reset" class="btn btn-primary" href="#">Reset</a>
+				<a id="restart" class="btn btn-primary" href="#">Restart</a>
 			</div>
 			<div>
 				<h3>Luminosité</h3>
@@ -54,7 +58,7 @@
 		<script src="/socket.io/socket.io.js"></script>
 		<script>
 			var socket = io.connect(location.host);
-			var buttons = ['play', 'pause', 'reset', 'max', 'mean', 'min']
+			var buttons = ['play', 'pause', 'restart', 'max', 'mean', 'min']
 			buttons.forEach(function(button) {
 				var link = document.getElementById(button);
 				link.onclick = function() {
@@ -91,6 +95,14 @@
 					socket.emit('setTime', time);
 				}
 			};
+
+			socket.on('time', function(time) {
+				document.getElementById('time').innerText = time;
+			});
+			socket.on('setTime', function(time) {
+				console.log(time);
+				document.getElementById('ref').innerText = time;
+			});
 		</script>
 	</body>
 </html>

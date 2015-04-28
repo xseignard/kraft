@@ -2,21 +2,32 @@ var dgram = require('dgram'),
 	express = require('express'),
 	app = express(),
 	server = require('http').Server(app),
-	io = require('socket.io')(server);
+	io = require('socket.io')(server),
+	Timer = require('./timer');
 
+
+var timer = new Timer(72,0,0);
+var i = 0;
+timer.start();
+timer.on('sec', function(time) {
+	console.log(time);
+	io.sockets.emit('time', time);
+	setTime(time);
+});
 server.listen(3000);
 
 app.use(express.static(__dirname + '/public/'));
 
 io.on('connection', function (socket) {
+	io.sockets.emit('setTime', timer.toString(true));
 	socket.on('play', function (data) {
-		play();
+		timer.start();
 	});
 	socket.on('pause', function (data) {
-		pause();
+		timer.pause();
 	});
-	socket.on('reset', function (data) {
-		reset();
+	socket.on('restart', function (data) {
+		timer.restart();
 	});
 	socket.on('max', function (data) {
 		max();
@@ -28,14 +39,15 @@ io.on('connection', function (socket) {
 		min();
 	});
 	socket.on('setTime', function (data) {
-		setTime(data);
+		timer.set(data);
+		io.sockets.emit('setTime', data);
 	});
 });
 
 // arduinos IP/PORT
 var host = '192.168.2.';
 var first = 2;
-var last = 2;
+var last = 4;
 var port = 8888;
 
 // app receiving messages
@@ -60,9 +72,12 @@ var sendText = function (text, ip) {
 
 var play = function() {
 	console.log('Play');
-	for (var i = first; i <= last; i++) {
+	interval = setInterval(function() {
+
+	}, 1000);
+	/*for (var i = first; i <= last; i++) {
 		sendText('p', host + i);
-	}
+	}*/
 };
 
 var pause = function() {

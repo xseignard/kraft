@@ -3,7 +3,6 @@
 #include <TimerOne.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
-#include <CountDownTimer.h>
 //#include "ChunkFive.h"
 #include "Tertre.h"
 //#include "SystemFont5x7.h"
@@ -15,12 +14,6 @@
 #define DISPLAYS_HIGH 1
 DMD dmd(DISPLAYS_WIDE,DISPLAYS_HIGH);
 int brightness = 30;
-
-// -----------------------------------------------------------
-// Counter stuff
-// -----------------------------------------------------------
-CountDownTimer T;
-boolean paused = false;
 boolean mainPanel = false;
 int scrollInterval = 5;
 
@@ -54,9 +47,6 @@ void setup() {
 	// ethernet communication
 	Ethernet.begin(mac, ip);
 	Udp.begin(localPort);
-	// start 72h timer
-	T.SetTimer(72,0,0);
-	T.StartTimer();
 	// set brightness of the display
 	pinMode(9, OUTPUT);
 	analogWrite(9, 30);
@@ -79,51 +69,24 @@ void loop() {
 		Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
 		handlePacket(packetBuffer);
 	}
-	T.Timer();
-	if (T.TimeHasChanged()) {
-		String time = formatTime();
-		// flash when one hour has elapsed
-		if (T.ShowSeconds() == 0 && T.ShowMinutes() == 0) {
-			flash(2);
-		}
+}
+
+void handlePacket(char* text) {
+	// set hours/minutes/seconds of the timer
+	if (text[0] == 't') {
 		// randomly display a movitational message
-		//else if (T.ShowSeconds() == random(1,60) && !mainPanel) {
-		else if (T.ShowSeconds() == 55 && !mainPanel) {
+		if (random(20) == 10 && !mainPanel) {
 			String randomMessage = randomMessages[random(0, 5)];
 			dmd.clearScreen(true);
 			scrollText(randomMessage, scrollInterval);
 		}
-		// else display counter
+		// or the time
 		else {
-			// chunkfive
-			//dmd.drawString(52, 1, time + "    ");
-			// tertre
-			drawString(58, 1, time + "    ");
+			String timeToDisplay = String(text[1]) + String(text[2]) + ":";
+			timeToDisplay += String(text[4]) + String(text[5])  + ":";
+			timeToDisplay += String(text[7]) + String(text[8]);
+			drawString(58, 1, timeToDisplay + "    ");
 		}
-	}
-}
-
-void handlePacket(char* text) {
-	// pause/play
-	if (text[0] == 'p') {
-		paused = !paused;
-		if (paused) {
-			T.PauseTimer();
-		}
-		else {
-			T.ResumeTimer();
-		}
-	}
-	// reset
-	else if (text[0] == 'r') {
-		T.ResetTimer();
-	}
-	// set hours/minutes/seconds of the timer
-	else if (text[0] == 't') {
-		String hours = String(text[1]) + String(text[2]);
-		String minutes = String(text[4]) + String(text[5]);
-		String seconds = String(text[7]) + String(text[8]);
-		T.SetTimer(hours.toInt(), minutes.toInt(), seconds.toInt());
 	}
 	// set scrolling speed
 	else if (text[0] == 's') {
@@ -175,19 +138,6 @@ void scrollText(String text, int interval) {
 			timer = millis();
 		}
 	}
-}
-
-String formatTime() {
-	String time = "";
-	if (T.ShowHours() < 10) time += "0";
-	time += T.ShowHours();
-	time += ":";
-	if (T.ShowMinutes() < 10) time += "0";
-	time += T.ShowMinutes();
-	time += ":";
-	if (T.ShowSeconds() < 10) time += "0";
-	time += T.ShowSeconds();
-	return time;
 }
 
 void flash(int times) {
