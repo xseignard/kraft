@@ -12,8 +12,13 @@ util.inherits(Timer, EventEmitter);
 Timer.prototype.start = function() {
 	var self = this;
 	interval = setInterval(function() {
-		self.sec--;
-		self.emit('sec', self.toString());
+		if (self.sec > 0) {
+			self.sec--;
+			self.emit('sec', self.toString());
+		}
+		else {
+			self.emit('end');
+		}
 	}, 1000)
 };
 Timer.prototype.resume = Timer.prototype.start;

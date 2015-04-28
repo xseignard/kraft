@@ -74,19 +74,34 @@ void loop() {
 void handlePacket(char* text) {
 	// set hours/minutes/seconds of the timer
 	if (text[0] == 't') {
+		String hours = String(text[1]) + String(text[2]);
+		String minutes = String(text[4]) + String(text[5]);
+		String seconds = String(text[7]) + String(text[8]);
+		//flash screen when it ends
+		if (hours == "00" && minutes == "00" && seconds == "00") {
+			flash(5);
+		}
+		//flash screen when hours changes
+		else if (minutes == "00" && seconds == "00") {
+			flash(2);
+		}
 		// randomly display a movitational message
-		if (random(20) == 10 && !mainPanel) {
+		else if (random(20) == 10 && !mainPanel) {
 			String randomMessage = randomMessages[random(0, 5)];
 			dmd.clearScreen(true);
 			scrollText(randomMessage, scrollInterval);
 		}
 		// or the time
 		else {
-			String timeToDisplay = String(text[1]) + String(text[2]) + ":";
-			timeToDisplay += String(text[4]) + String(text[5])  + ":";
-			timeToDisplay += String(text[7]) + String(text[8]);
+			String timeToDisplay = hours + ":" + minutes + ":" + seconds;
 			drawString(58, 1, timeToDisplay + "    ");
 		}
+	}
+	// random mode
+	else if (text[0] == 'r') {
+		String randomMessage = randomMessages[random(0, 5)];
+		dmd.clearScreen(true);
+		scrollText(randomMessage, scrollInterval);
 	}
 	// set scrolling speed
 	else if (text[0] == 's') {
@@ -141,11 +156,14 @@ void scrollText(String text, int interval) {
 }
 
 void flash(int times) {
+	int oldBrightness = brightness;
+	brightness = 255;
 	for(int i = 0; i < times; i++) {
 		dmd.clearScreen(false);
 		delay(500);
 		dmd.clearScreen(true);
 		delay(500);
 	}
+	brightness = oldBrightness;
 }
 

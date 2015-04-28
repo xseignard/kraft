@@ -8,11 +8,24 @@ var dgram = require('dgram'),
 
 var timer = new Timer(72,0,0);
 var i = 0;
+var canSend = true;
+
 timer.start();
 timer.on('sec', function(time) {
 	console.log(time);
 	io.sockets.emit('time', time);
 	setTime(time);
+});
+timer.on('end', function() {
+	if (canSend) {
+		canSend = false;
+		setTimeout(function() {
+			console.log('end');
+			io.sockets.emit('time', '00:00:00');
+			random();
+			canSend = true;
+		}, 10000);
+	}
 });
 server.listen(3000);
 
@@ -86,6 +99,14 @@ var pause = function() {
 		sendText('p', host + i);
 	}
 };
+
+var random = function() {
+	console.log('Random');
+	for (var i = first; i <= last; i++) {
+		sendText('r', host + i);
+	}
+};
+
 
 var reset = function() {
 	console.log('Reset');
