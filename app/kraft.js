@@ -73,7 +73,7 @@ var defaultBrightness = 30;
 client.on('listening', function() {
 	console.log('listening');
 	for (var i = first; i <= last; i++) {
-		sendText('s005', host + i);
+		sendText('b255', host + i);
 	}
 });
 client.bind(3333, '192.168.2.6');
